@@ -1,0 +1,48 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: black; /* page background black so space around art is black */
+  color: white;
+  font-family: sans-serif;
+}
+
+#page{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+#canvas-container{
+  max-width: 90vw;
+  width: 800px; /* logical canvas width */
+}
+
+canvas {
+  display: block;
+  width: 100%; /* make the canvas scale responsively to container */
+  height: auto;
+  box-shadow: 0 0 0 12px black; /* ensure visible black border around canvas */
+}
+
+#controls{
+  width: 90vw;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.slider{
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+}
