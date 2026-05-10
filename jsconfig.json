@@ -1,10 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es6"
+    "target": "ES2021",
+    "module": "ESNext",
+    "types": ["p5/global"]
   },
   "include": [
     "*.js",
-    "**/*.js",
-    "c:\\Users\\MAC328\\.vscode\\extensions\\samplavigne.p5-vscode-1.2.16\\p5types\\global.d.ts"
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ]
 }

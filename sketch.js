@@ -1,163 +1,246 @@
-// This example shows how to load an image to the pixels[] array and
-// draw lines on the canvas with the color of the pixels of the image.
-// This is a basic starter code for more advanced image processing.
-
-let gridScale = 100;
-let sprites = [];
-let images = [];
-let currentImageIndex = 0;
-let lineLengthSlider, gridSizeSlider, numOfLinesSlider;
-let useGridScale = false; 
-let toggleButton;
-let img;
-let scaledImg; // graphics buffer containing the image scaled to canvas
 const CANVAS_W = 800;
 const CANVAS_H = 800;
 
+const IMAGE_PATHS = [
+  "assets/bellpepperbell.jpeg",
+  "assets/benandbea.jpeg",
+  "assets/colorfuldj2.jpg",
+  "assets/Faminepainting.jpeg",
+  "assets/india.jpeg",
+  "assets/joediggs.jpeg",
+  "assets/kimpy.JPG",
+  "assets/raveguy.JPG",
+  "assets/redpainting.jpeg",
+  "assets/santacruz.JPG",
+  "assets/straat.jpeg",
+  "assets/theboys.jpeg",
+  "assets/vendinngMachine.JPG",
+];
+
+const DEFAULT_SETTINGS = {
+  lineLength: 100,
+  gridScale: 45,
+  numOfLines: 1200,
+};
+
+let images = [];
+let currentImageIndex = 0;
+let scaledImg = null;
+
+let lineLengthSlider;
+let gridSizeSlider;
+let numOfLinesSlider;
+
+let useGridScale = false;
+let isDrawingEnabled = true;
+
 function preload() {
-  // Load the images into an array
-  images.push(loadImage("assets/vendinngMachine.JPG"));
-  images.push(loadImage("assets/colorfuldj2.jpg"));
-  images.push(loadImage("assets/colourfuldj.jpg"));
-  images.push(loadImage("assets/bellpepperbell.jpeg"));
-  images.push(loadImage("assets/Faminepainting.jpeg"));
-  images.push(loadImage("assets/kimpy.JPG"));
-  images.push(loadImage("assets/mannybuild.jpeg"));
-  images.push(loadImage("assets/raveguy.JPG"));
-  images.push(loadImage("assets/redpainting.jpeg"));
-  images.push(loadImage("assets/santacruz.JPG"));
-  images.push(loadImage("assets/taylor.jpeg"));
-  // images.push(loadImage("assets/india.JPG")); // removed: file not present in assets
+  IMAGE_PATHS.forEach((path) => {
+    images.push(
+      loadImage(
+        path,
+        () => {},
+        () => {
+          console.error(`Failed to load image: ${path}`);
+        }
+      )
+    );
+  });
 }
 
 function setup() {
-  let cnv = createCanvas(CANVAS_W, CANVAS_H);
-  cnv.parent('canvas-container');
-  img = images[currentImageIndex];
-  createScaledImage(currentImageIndex);
-  // fill the page canvas once with black so surrounding area is black
+  pixelDensity(1);
+  const canvas = createCanvas(CANVAS_W, CANVAS_H);
+  canvas.parent("canvas-container");
+  frameRate(30);
+  strokeWeight(1);
   background(0);
 
-  let button = createButton('click to change image');
-  button.mousePressed(changeImage);
-  button.parent('controls');
-  button.style('background-color', 'white');
-  button.style('font-size', '20px');
-  button.style('border-radius', '12px');
+  buildControls();
 
-  let lineLengthLabel = createP('Line Length');
-  lineLengthLabel.parent('controls');
-  lineLengthLabel.style('font-size', '18px');
-  lineLengthLabel.style('margin', '0');
-  lineLengthLabel.style('color', 'white');
+  if (images.length > 0) {
+    createScaledImage(currentImageIndex);
+  }
 
-  lineLengthSlider = createSlider(10, 200, 100);
-  lineLengthSlider.parent('controls');
-  lineLengthSlider.class('slider');
-
-  let gridSizeLabel = createP('Grid Scale');
-  gridSizeLabel.parent('controls');
-  gridSizeLabel.style('font-size', '18px');
-  gridSizeLabel.style('margin', '0');
-
-  gridSizeSlider = createSlider(1, 200, 100);
-  gridSizeSlider.parent('controls');
-  gridSizeSlider.class('slider');
-
-  let numOfLinesLabel = createP('Number of Lines');
-  numOfLinesLabel.parent('controls');
-  numOfLinesLabel.style('font-size', '18px');
-  numOfLinesLabel.style('margin', '0');
-
-  numOfLinesSlider = createSlider(100, 3000, 1500);
-  numOfLinesSlider.parent('controls');
-  numOfLinesSlider.class('slider');
-
-  toggleButton = createButton('click to turn on Grid Scale');
-  toggleButton.mousePressed(toggleGridScale);
-  toggleButton.parent('controls');
-  toggleButton.style('background-color', 'white');
-  toggleButton.style('font-size', '16px');
-  toggleButton.style('border-radius', '12px');
+  clearCanvas();
 }
 
 function draw() {
-  // don't clear the canvas each frame — lines should accumulate
-  if (!scaledImg) return;
-  scaledImg.loadPixels(); // Load pixels of the scaled image
+  if (!isDrawingEnabled || !scaledImg) {
+    return;
+  }
 
-  let lineLength = lineLengthSlider.value();
-  gridScale = gridSizeSlider.value();
-  let numOfLines = numOfLinesSlider.value();
+  const lineLength = lineLengthSlider.value();
+  const gridScale = max(1, gridSizeSlider.value());
+  const numOfLines = numOfLinesSlider.value();
 
   if (useGridScale) {
-    // Draw lines based on the grid scale
-    for (let y = 0; y < scaledImg.height; y += gridScale) {
-      for (let x = 0; x < scaledImg.width; x += gridScale) {
-        let index = (floor(x) + floor(y) * scaledImg.width) * 4; // Get the index of the pixel
-        // Get the RGBA values of the pixel
-        let r = scaledImg.pixels[index];
-        let g = scaledImg.pixels[index + 1];
-        let b = scaledImg.pixels[index + 2];
-        let a = scaledImg.pixels[index + 3];
-        let c = color(r, g, b, a); // Create a color object from the RGBA values
-        stroke(c);
-        let angle = random(TWO_PI); // Random angle
-        let x2 = x + cos(angle) * lineLength;
-        let y2 = y + sin(angle) * lineLength;
-        line(x, y, x2, y2);
-      }
-    }
+    drawGridSampledLines(gridScale, lineLength, numOfLines);
   } else {
-    // Draw lines randomly
-    for (let i = 0; i < numOfLines; i++) {
-      let x = random(scaledImg.width);
-      let y = random(scaledImg.height);
-      let index = (floor(x) + floor(y) * scaledImg.width) * 4; // Get the index of the pixel
-      // Get the RGBA values of the pixel
-      let r = scaledImg.pixels[index];
-      let g = scaledImg.pixels[index + 1];
-      let b = scaledImg.pixels[index + 2];
-      let a = scaledImg.pixels[index + 3];
-      let c = color(r, g, b, a); // Create a color object from the RGBA values
-      stroke(c);
-      let angle = random(TWO_PI); // Random angle
-      let x2 = x + cos(angle) * lineLength;
-      let y2 = y + sin(angle) * lineLength;
-      line(x, y, x2, y2);
-    }
+    drawRandomLines(numOfLines, lineLength);
   }
 }
 
-function changeImage() {
-  currentImageIndex = (currentImageIndex + 1) % images.length;
-  img = images[currentImageIndex];
-  createScaledImage(currentImageIndex);
+function drawRandomLines(numOfLines, lineLength) {
+  for (let i = 0; i < numOfLines; i++) {
+    const x = random(scaledImg.width);
+    const y = random(scaledImg.height);
+    drawLineFromSample(x, y, lineLength);
+  }
 }
 
-// Create a graphics buffer with the image scaled to the canvas size.
+function drawGridSampledLines(gridScale, lineLength, numOfLines) {
+  const columns = Math.ceil(scaledImg.width / gridScale);
+  const rows = Math.ceil(scaledImg.height / gridScale);
+  const totalCells = columns * rows;
+  const linesToDraw = Math.min(numOfLines, totalCells);
+
+  for (let i = 0; i < linesToDraw; i++) {
+    const cellIndex = floor(random(totalCells));
+    const x = (cellIndex % columns) * gridScale;
+    const y = floor(cellIndex / columns) * gridScale;
+    drawLineFromSample(x, y, lineLength);
+  }
+}
+
+function drawLineFromSample(x, y, lineLength) {
+  const px = constrain(floor(x), 0, scaledImg.width - 1);
+  const py = constrain(floor(y), 0, scaledImg.height - 1);
+  const index = (px + py * scaledImg.width) * 4;
+
+  if (index < 0 || index + 3 >= scaledImg.pixels.length) {
+    return;
+  }
+
+  const r = scaledImg.pixels[index];
+  const g = scaledImg.pixels[index + 1];
+  const b = scaledImg.pixels[index + 2];
+  const a = scaledImg.pixels[index + 3];
+
+  stroke(r, g, b, a);
+  const angle = random(TWO_PI);
+  const x2 = px + cos(angle) * lineLength;
+  const y2 = py + sin(angle) * lineLength;
+  line(px, py, x2, y2);
+}
+
+function buildControls() {
+  const buttonRow = createDiv("");
+  buttonRow.parent("controls");
+  buttonRow.addClass("button-row");
+
+  createControlButton("Next", changeImage, buttonRow);
+  createControlButton("Mode", toggleGridScale, buttonRow);
+  createControlButton("Pause", toggleDrawing, buttonRow);
+  createControlButton("Clear", clearCanvas, buttonRow);
+  createControlButton("Random", randomizeSettings, buttonRow);
+  createControlButton("Save", saveCurrentFrame, buttonRow);
+
+  createControlLabel("Length");
+  lineLengthSlider = createSlider(10, 200, DEFAULT_SETTINGS.lineLength, 1);
+  configureSlider(lineLengthSlider);
+
+  createControlLabel("Grid");
+  gridSizeSlider = createSlider(1, 200, DEFAULT_SETTINGS.gridScale, 1);
+  configureSlider(gridSizeSlider);
+
+  createControlLabel("Number of Lines per Frame");
+  numOfLinesSlider = createSlider(50, 3000, DEFAULT_SETTINGS.numOfLines, 1);
+  configureSlider(numOfLinesSlider);
+}
+
+function createControlButton(text, handler, parentEl) {
+  const button = createButton(text);
+  button.parent(parentEl || "controls");
+  button.addClass("control-button");
+  button.mousePressed(handler);
+  return button;
+}
+
+function createControlLabel(text) {
+  const label = createP(text);
+  label.parent("controls");
+  label.addClass("control-label");
+  return label;
+}
+
+function configureSlider(slider) {
+  slider.parent("controls");
+  slider.addClass("slider");
+}
+
+function changeImage() {
+  if (images.length === 0) {
+    return;
+  }
+
+  currentImageIndex = (currentImageIndex + 1) % images.length;
+  createScaledImage(currentImageIndex);
+  clearCanvas();
+}
+
 function createScaledImage(index) {
-  if (!images[index]) return;
-  let src = images[index];
+  const src = images[index];
+
+  if (!src || !src.width || !src.height) {
+    scaledImg = null;
+    return;
+  }
+
   scaledImg = createGraphics(CANVAS_W, CANVAS_H);
-  // draw the source image into the buffer scaled to fit the canvas while preserving aspect
-  let srcW = src.width;
-  let srcH = src.height;
-  let scale = Math.min(CANVAS_W / srcW, CANVAS_H / srcH);
-  let dw = Math.floor(srcW * scale);
-  let dh = Math.floor(srcH * scale);
-  let dx = Math.floor((CANVAS_W - dw) / 2);
-  let dy = Math.floor((CANVAS_H - dh) / 2);
+  scaledImg.pixelDensity(1);
+
+  const scale = Math.min(CANVAS_W / src.width, CANVAS_H / src.height);
+  const drawWidth = Math.floor(src.width * scale);
+  const drawHeight = Math.floor(src.height * scale);
+  const drawX = Math.floor((CANVAS_W - drawWidth) / 2);
+  const drawY = Math.floor((CANVAS_H - drawHeight) / 2);
+
   scaledImg.background(0);
-  scaledImg.image(src, dx, dy, dw, dh);
+  scaledImg.image(src, drawX, drawY, drawWidth, drawHeight);
   scaledImg.loadPixels();
 }
 
 function toggleGridScale() {
   useGridScale = !useGridScale;
-  if (useGridScale) {
-    toggleButton.style('background-color', 'green');
-  } else {
-    toggleButton.style('background-color', 'white');
+}
+
+function toggleDrawing() {
+  isDrawingEnabled = !isDrawingEnabled;
+}
+
+function clearCanvas() {
+  background(0);
+}
+
+function randomizeSettings() {
+  lineLengthSlider.value(floor(random(10, 201)));
+  gridSizeSlider.value(floor(random(4, 121)));
+  numOfLinesSlider.value(floor(random(250, 2001)));
+  clearCanvas();
+}
+
+function saveCurrentFrame() {
+  saveCanvas(`generative-art-${Date.now()}`, "png");
+}
+
+function keyPressed() {
+  if (key === " ") {
+    toggleDrawing();
+    return false;
   }
+
+  if (key === "c" || key === "C") {
+    clearCanvas();
+  } else if (key === "i" || key === "I") {
+    changeImage();
+  } else if (key === "g" || key === "G") {
+    toggleGridScale();
+  } else if (key === "r" || key === "R") {
+    randomizeSettings();
+  } else if (key === "s" || key === "S") {
+    saveCurrentFrame();
+  }
+
+  return true;
 }

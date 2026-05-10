@@ -1,0 +1,15 @@
+{
+  "name": "generative-art-project",
+  "private": true,
+  "version": "1.1.0",
+  "description": "Interactive p5.js generative art sketch",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/p5": "^1.7.6",
+    "vite": "^5.4.19"
+  }
+}

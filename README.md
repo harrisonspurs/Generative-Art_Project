@@ -1,25 +1,46 @@
-# Generative Art Portfolio
+# Generative Art Project
 
-Creative coding projects exploring algorithmic and computational art.
+Interactive p5.js artwork that paints line fields sampled from image colors.
 
-## About
-This project was created as part of the Generative Art module at the University of Salford. It explores parametric design, procedural generation, and artistic programming.
+## Highlights
+- Multi-image source set with quick image switching
+- Random sampling and grid sampling modes
+- Live sliders for line length, grid scale, and draw density
+- Pause/resume drawing, clear canvas, randomize settings, and export PNG
+- Keyboard shortcuts for fast iteration while creating art
 
-## Technologies Used
-- p5.js
-- JavaScript
+## Tech Stack
+- p5.js (local library)
+- JavaScript (global mode)
 - HTML/CSS
-- [Any other tools you used]
+- Vite (development server + production build)
 
-## Projects Included
-- [List your main pieces]
+## Run Locally
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start dev server:
+   ```bash
+   npm run dev
+   ```
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+4. Preview production build:
+   ```bash
+   npm run preview
+   ```
 
-## How to Run
-1. Open `index.html` in a web browser
-OR
-2. Use a local server (Live Server extension in VS Code)
+You can still open `index.html` directly, but using Vite gives better consistency and deployment output.
 
-## Screenshots
-[Add screenshots later]
-
-Created by Harrison Bottomley - 2024
+## Controls
+- **Buttons**: Next Image, Toggle Mode, Pause / Resume, Clear Canvas, Randomize, Save PNG
+- **Keyboard**:
+  - `Space`: Pause / Resume
+  - `I`: Next Image
+  - `G`: Toggle Mode
+  - `R`: Randomize settings
+  - `C`: Clear canvas
+  - `S`: Save PNG
