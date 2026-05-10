@@ -3,9 +3,13 @@
   "private": true,
   "version": "1.1.0",
   "description": "Interactive p5.js generative art sketch",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/copy-static.cjs",
     "preview": "vite preview"
   },
   "devDependencies": {

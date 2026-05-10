@@ -10,7 +10,7 @@ Interactive p5.js artwork that paints line fields sampled from image colors.
 - Keyboard shortcuts for fast iteration while creating art
 
 ## Tech Stack
-- p5.js (local library)
+- p5.js (CDN)
 - JavaScript (global mode)
 - HTML/CSS
 - Vite (development server + production build)
@@ -34,6 +34,16 @@ Interactive p5.js artwork that paints line fields sampled from image colors.
    ```
 
 You can still open `index.html` directly, but using Vite gives better consistency and deployment output.
+
+## Deploying on Vercel
+This repo is configured for Vercel with `vercel.json`:
+- Framework: `vite`
+- Build command: `npm run build`
+- Output directory: `dist`
+
+If Vercel cached old settings, clear the build cache and redeploy.
+
+Image assets are automatically copied into `dist/assets` during `npm run build`.
 
 ## Controls
 - **Buttons**: Next Image, Toggle Mode, Pause / Resume, Clear Canvas, Randomize, Save PNG

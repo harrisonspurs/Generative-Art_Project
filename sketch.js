@@ -244,3 +244,10 @@ function keyPressed() {
 
   return true;
 }
+
+if (typeof window !== "undefined") {
+  window.preload = preload;
+  window.setup = setup;
+  window.draw = draw;
+  window.keyPressed = keyPressed;
+}
